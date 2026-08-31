@@ -342,9 +342,9 @@ class Catalog {
   }
 
  private:
-  [[maybe_unused]] BufferPoolManager *bpm_;
-  [[maybe_unused]] LockManager *lock_manager_;
-  [[maybe_unused]] LogManager *log_manager_;
+  BufferPoolManager *bpm_;
+  LockManager *lock_manager_;
+  LogManager *log_manager_;
 
   /**
    * Map table identifier -> table metadata.

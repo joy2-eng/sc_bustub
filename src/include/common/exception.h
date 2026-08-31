@@ -19,7 +19,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "type/type.h"
+#include "../type/type.h"
 
 namespace bustub {
 

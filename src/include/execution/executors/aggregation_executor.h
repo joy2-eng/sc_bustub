@@ -71,13 +71,53 @@ class SimpleAggregationHashTable {
    * @param input The input value
    */
   void CombineAggregateValues(AggregateValue *result, const AggregateValue &input) {
+    /**
+     * *注意输入的两个参数
+     * 参数一 已经遍历过的该组成员的聚集内容
+     * 参数二 新遍历到的即将加入的tuple
+     */
     for (uint32_t i = 0; i < agg_exprs_.size(); i++) {
       switch (agg_types_[i]) {
         case AggregationType::CountStarAggregate:
+          //来了不管是不是null就加一
+          result->aggregates_[i] = result->aggregates_[i].Add({INTEGER , 1});
+          break;
         case AggregationType::CountAggregate:
+          //是null不加1
+          if(!input.aggregates_[i].IsNull()){
+            if(result->aggregates_[i].IsNull()){
+              //说明这是第一个有效值初始化一个值，在这之前为null
+              result->aggregates_[i] = Value(INTEGER , 0);
+            }
+            result->aggregates_[i] = result->aggregates_[i].Add({INTEGER , 1});
+          }
+          break;
+
         case AggregationType::SumAggregate:
+          //result没有值的时候，先赋初始值
+          if(!input.aggregates_[i].IsNull() && result->aggregates_[i].IsNull()){
+            result->aggregates_[i] = Value(INTEGER , 0);
+          }
+          //只有是整数时才能累加
+          if(!input.aggregates_[i].IsNull() && input.aggregates_[i].CheckInteger()){
+            result->aggregates_[i] = result->aggregates_[i].Add(input.aggregates_[i]);
+          }
+          break;
         case AggregationType::MinAggregate:
+          //要么原本为空，要么新来的比原本的小
+          if(!input.aggregates_[i].IsNull() &&
+              (result->aggregates_[i].IsNull() || 
+               input.aggregates_[i].CompareLessThan(result->aggregates_[i]) == CmpBool::CmpTrue)) {
+            result->aggregates_[i] = input.aggregates_[i];
+          }
+          break;
         case AggregationType::MaxAggregate:
+          //要么原本为空，要么新来的比原本的大
+          if(!input.aggregates_[i].IsNull() &&
+              (result->aggregates_[i].IsNull() || 
+               input.aggregates_[i].CompareGreaterThan(result->aggregates_[i]) == CmpBool::CmpTrue)) {
+            result->aggregates_[i] = input.aggregates_[i];
+          }
           break;
       }
     }
@@ -201,8 +241,9 @@ class AggregationExecutor : public AbstractExecutor {
   /** The child executor that produces tuples over which the aggregation is computed */
   std::unique_ptr<AbstractExecutor> child_;
   /** Simple aggregation hash table */
-  // TODO(Student): Uncomment SimpleAggregationHashTable aht_;
+  SimpleAggregationHashTable aht_; //哈希表
   /** Simple aggregation hash table iterator */
-  // TODO(Student): Uncomment SimpleAggregationHashTable::Iterator aht_iterator_;
+  SimpleAggregationHashTable::Iterator aht_iterator_; //迭代器
+  bool successful_{false};
 };
 }  // namespace bustub

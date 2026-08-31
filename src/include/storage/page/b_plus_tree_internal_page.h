@@ -14,6 +14,7 @@
 #include <string>
 
 #include "storage/page/b_plus_tree_page.h"
+using namespace std;
 
 namespace bustub {
 
@@ -98,6 +99,22 @@ class BPlusTreeInternalPage : public BPlusTreePage {
 
     return kstr;
   }
+
+  auto Lookup(const KeyType &key, const KeyComparator &comparator) const -> int;
+  void SetValueAt(int index, const ValueType &value);
+  auto GetValue(int index) const -> page_id_t;
+  void InsertFirstOf(const page_id_t &value);
+
+  auto Insert(const KeyType &key, const page_id_t &value, const KeyComparator &comparator) -> int;
+
+  auto RemoveKeyAt(const KeyType &key, const KeyComparator &comparator) -> bool;
+  void EraseAt(int index);
+
+  void MoveFirstToEndOf(B_PLUS_TREE_INTERNAL_PAGE_TYPE *recipient);
+  void MoveHalfTo(B_PLUS_TREE_INTERNAL_PAGE_TYPE *recipient);
+  void MoveAllTo(B_PLUS_TREE_INTERNAL_PAGE_TYPE *recipient);
+  void MoveEndToFrontOf(B_PLUS_TREE_INTERNAL_PAGE_TYPE *recipient);
+  
 
  private:
   // Flexible array member for page data.

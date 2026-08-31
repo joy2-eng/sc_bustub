@@ -30,10 +30,10 @@ class LRUKNode {
   /** History of last seen K timestamps of this page. Least recent timestamp stored in front. */
   // Remove maybe_unused if you start using them. Feel free to change the member variables as you want.
 
-  [[maybe_unused]] std::list<size_t> history_;
-  [[maybe_unused]] size_t k_;
-  [[maybe_unused]] frame_id_t fid_;
-  [[maybe_unused]] bool is_evictable_{false};
+  std::list<size_t> history_;
+  size_t k_;
+  frame_id_t fid_;
+  bool is_evictable_{false};
 };
 
 /**
@@ -150,12 +150,32 @@ class LRUKReplacer {
  private:
   // TODO(student): implement me! You can replace these member variables as you like.
   // Remove maybe_unused if you start using them.
-  [[maybe_unused]] std::unordered_map<frame_id_t, LRUKNode> node_store_;
-  [[maybe_unused]] size_t current_timestamp_{0};
-  [[maybe_unused]] size_t curr_size_{0};
-  [[maybe_unused]] size_t replacer_size_;
-  [[maybe_unused]] size_t k_;
-  [[maybe_unused]] std::mutex latch_;
-};
+// 保存每个frame对应的LRUK节点信息（存储访问时间、计数等，双队列方案可选择不用）
+std::unordered_map<frame_id_t, LRUKNode> node_store_;
+// 全局时间戳，每次页面访问自增，记录访问时刻
+size_t current_timestamp_{0};
 
+// Replacer最大容量（缓冲池总帧数）
+size_t replacer_size_;
+// LRU-K参数K，常见取值K=2
+size_t k_;
+// 当前能够被驱逐的页面数量
+size_t current_size_;
+// 标记帧是否允许被淘汰：true=可驱逐，false=被pin占用不可驱逐
+std::vector<bool> is_accessible_;
+// 互斥锁，保证Replacer多线程并发安全
+std::mutex latch_;
+// 记录每个frame累计访问次数
+std::unordered_map<int, size_t> use_count_;
+
+// 历史队列：存放访问次数 < K 的页面（受保护，暂不参与淘汰）
+std::list<frame_id_t> history_list_;
+// history_list快速索引：frame_id → list迭代器，实现O(1)删除节点
+std::unordered_map<frame_id_t, std::list<frame_id_t>::iterator> history_map_;
+
+// 缓存队列：存放访问次数 ≥ K 的页面，候选淘汰集合
+std::list<frame_id_t> cache_list_;
+// cache_list快速索引：frame_id → list迭代器，实现O(1)删除节点
+std::unordered_map<frame_id_t, std::list<frame_id_t>::iterator> cache_map_;
+};
 }  // namespace bustub

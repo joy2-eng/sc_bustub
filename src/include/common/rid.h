@@ -16,7 +16,7 @@
 #include <sstream>
 #include <string>
 
-#include "common/config.h"
+#include "config.h"
 
 namespace bustub {
 

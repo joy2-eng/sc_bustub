@@ -17,6 +17,7 @@
 
 #include "buffer/buffer_pool_manager.h"
 #include "storage/index/generic_key.h"
+using namespace std;
 
 namespace bustub {
 
@@ -58,9 +59,9 @@ class BPlusTreePage {
 
  private:
   // member variable, attributes that both internal and leaf page share
-  IndexPageType page_type_ __attribute__((__unused__));
-  int size_ __attribute__((__unused__));
-  int max_size_ __attribute__((__unused__));
+  IndexPageType page_type_ ;
+  int size_ ;
+  int max_size_ ;
 };
 
 }  // namespace bustub

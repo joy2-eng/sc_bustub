@@ -73,16 +73,22 @@ class BasicPageGuard {
     return page_->GetData();
   }
 
-  template <class T>
-  auto AsMut() -> T * {
-    return reinterpret_cast<T *>(GetDataMut());
-  }
+ template <class T>
+auto AsMut() -> T * {
+    //static_assert(std::is_trivially_copyable_v<T>, "T must be trivially copyable");
+    
+    auto *data = GetDataMut();
+    // 调试模式检查对齐
+    assert(reinterpret_cast<uintptr_t>(data) % alignof(T) == 0);
+    
+    return reinterpret_cast<T *>(data);
+}
 
  private:
   friend class ReadPageGuard;
   friend class WritePageGuard;
 
-  [[maybe_unused]] BufferPoolManager *bpm_{nullptr};
+  BufferPoolManager *bpm_{nullptr};
   Page *page_{nullptr};
   bool is_dirty_{false};
 };

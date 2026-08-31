@@ -56,7 +56,14 @@ class InsertExecutor : public AbstractExecutor {
 
  private:
   /** The insert plan node to be executed*/
+  //插入任务说明书
   const InsertPlanNode *plan_;
+  //数据来源工人
+  std::unique_ptr<AbstractExecutor>child_;
+  //记录目标表的信息
+  TableInfo *table_info_;
+  //插入结束的标志
+  bool is_end_ = false;
 };
 
 }  // namespace bustub

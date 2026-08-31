@@ -83,7 +83,19 @@ class BPlusTreeLeafPage : public BPlusTreePage {
 
     return kstr;
   }
+  
+  auto ValueAt(int index) const -> ValueType;
+  void RemoveAt(int index);
+  auto GetObjAt(int index) const -> const MappingType &;
+  auto RemoveKeyAt(const KeyType &key, const KeyComparator &comparator) -> bool;
 
+  auto Lookup(const KeyType &key, const KeyComparator &comparator) const -> int;
+  auto Insert(const KeyType &key, const ValueType &value, const KeyComparator &comparator) -> int;
+  
+  void MoveFirstToEndOf(BPlusTreeLeafPage *recipient);
+  void MoveHalfTo(BPlusTreeLeafPage *recipient);
+  void MoveEndToFrontOf(BPlusTreeLeafPage *recipient);
+  void MoveAllTo(BPlusTreeLeafPage *recipient);
  private:
   page_id_t next_page_id_;
   // Flexible array member for page data.

@@ -30,7 +30,9 @@ TableHeap::TableHeap(BufferPoolManager *bpm) : bpm_(bpm) {
   // Initialize the first table page.
   auto guard = bpm->NewPageGuarded(&first_page_id_);
   last_page_id_ = first_page_id_;
-  auto first_page = guard.AsMut<TablePage>();
+  char* page_data = guard.GetDataMut();
+  TablePage* first_page = reinterpret_cast<TablePage*>(page_data);
+
   BUSTUB_ASSERT(first_page != nullptr,
                 "Couldn't create a page for the table heap. Have you completed the buffer pool manager project?");
   first_page->Init();
@@ -41,7 +43,7 @@ auto TableHeap::InsertTuple(const TupleMeta &meta, const Tuple &tuple, LockManag
   std::unique_lock<std::mutex> guard(latch_);
   auto page_guard = bpm_->FetchPageWrite(last_page_id_);
   while (true) {
-    auto page = page_guard.AsMut<TablePage>();
+    TablePage* page = reinterpret_cast<TablePage*>(page_guard.GetDataMut());
     if (page->GetNextTupleOffset(meta, tuple) != std::nullopt) {
       break;
     }
@@ -55,7 +57,7 @@ auto TableHeap::InsertTuple(const TupleMeta &meta, const Tuple &tuple, LockManag
 
     page->SetNextPageId(next_page_id);
 
-    auto next_page = reinterpret_cast<TablePage *>(npg->GetData());
+    TablePage* next_page = reinterpret_cast<TablePage *>(npg->GetData());
     next_page->Init();
 
     page_guard.Drop();
@@ -69,7 +71,7 @@ auto TableHeap::InsertTuple(const TupleMeta &meta, const Tuple &tuple, LockManag
   }
   auto last_page_id = last_page_id_;
 
-  auto page = page_guard.AsMut<TablePage>();
+  TablePage* page = reinterpret_cast<TablePage*>(page_guard.GetDataMut());
   auto slot_id = *page->InsertTuple(meta, tuple);
 
   // only allow one insertion at a time, otherwise it will deadlock.
@@ -87,13 +89,13 @@ auto TableHeap::InsertTuple(const TupleMeta &meta, const Tuple &tuple, LockManag
 
 void TableHeap::UpdateTupleMeta(const TupleMeta &meta, RID rid) {
   auto page_guard = bpm_->FetchPageWrite(rid.GetPageId());
-  auto page = page_guard.AsMut<TablePage>();
+  TablePage* page = reinterpret_cast<TablePage*>(page_guard.GetDataMut());
   page->UpdateTupleMeta(meta, rid);
 }
 
 auto TableHeap::GetTuple(RID rid) -> std::pair<TupleMeta, Tuple> {
   auto page_guard = bpm_->FetchPageRead(rid.GetPageId());
-  auto page = page_guard.As<TablePage>();
+  const TablePage* page = reinterpret_cast<const TablePage*>(page_guard.GetData());
   auto [meta, tuple] = page->GetTuple(rid);
   tuple.rid_ = rid;
   return std::make_pair(meta, std::move(tuple));
@@ -101,7 +103,7 @@ auto TableHeap::GetTuple(RID rid) -> std::pair<TupleMeta, Tuple> {
 
 auto TableHeap::GetTupleMeta(RID rid) -> TupleMeta {
   auto page_guard = bpm_->FetchPageRead(rid.GetPageId());
-  auto page = page_guard.As<TablePage>();
+  const TablePage* page = reinterpret_cast<const TablePage*>(page_guard.GetData());
   return page->GetTupleMeta(rid);
 }
 
@@ -111,7 +113,7 @@ auto TableHeap::MakeIterator() -> TableIterator {
   guard.unlock();
 
   auto page_guard = bpm_->FetchPageRead(last_page_id);
-  auto page = page_guard.As<TablePage>();
+  const TablePage* page = reinterpret_cast<const TablePage*>(page_guard.GetData());
   return {this, {first_page_id_, 0}, {last_page_id, page->GetNumTuples()}};
 }
 
@@ -119,7 +121,7 @@ auto TableHeap::MakeEagerIterator() -> TableIterator { return {this, {first_page
 
 void TableHeap::UpdateTupleInPlaceUnsafe(const TupleMeta &meta, const Tuple &tuple, RID rid) {
   auto page_guard = bpm_->FetchPageWrite(rid.GetPageId());
-  auto page = page_guard.AsMut<TablePage>();
+  TablePage* page = reinterpret_cast<TablePage*>(page_guard.GetDataMut());
   page->UpdateTupleInPlaceUnsafe(meta, tuple, rid);
 }
 

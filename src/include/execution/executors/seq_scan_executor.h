@@ -50,5 +50,82 @@ class SeqScanExecutor : public AbstractExecutor {
  private:
   /** The sequential scan plan node to be executed */
   const SeqScanPlanNode *plan_;
+  std::unique_ptr<TableIterator>iterator_;
+  TableInfo *table_info_ = nullptr;
 };
 }  // namespace bustub
+
+/*
+# p0.03-string-scan
+./bin/bustub-sqllogictest ../test/sql/p0.03-string-scan.slt --verbose
+
+# p3.00-primer
+./bin/bustub-sqllogictest ../test/sql/p3.00-primer.slt --verbose
+
+# p3.01-seqscan
+./bin/bustub-sqllogictest ../test/sql/p3.01-seqscan.slt --verbose
+
+# p3.02-insert（你当前调试）
+./bin/bustub-sqllogictest ../test/sql/p3.02-insert.slt --verbose
+
+# p3.03-update
+./bin/bustub-sqllogictest ../test/sql/p3.03-update.slt --verbose
+
+# p3.04-delete
+./bin/bustub-sqllogictest ../test/sql/p3.04-delete.slt --verbose
+
+# p3.05-index-scan
+./bin/bustub-sqllogictest ../test/sql/p3.05-index-scan.slt --verbose
+
+# p3.06-empty-table
+./bin/bustub-sqllogictest ../test/sql/p3.06-empty-table.slt --verbose
+
+# p3.07-simple-agg
+./bin/bustub-sqllogictest ../test/sql/p3.07-simple-agg.slt --verbose
+
+# p3.08-group-agg-1
+./bin/bustub-sqllogictest ../test/sql/p3.08-group-agg-1.slt --verbose
+
+# p3.09-group-agg-2
+./bin/bustub-sqllogictest ../test/sql/p3.09-group-agg-2.slt --verbose
+
+# p3.10-simple-join
+./bin/bustub-sqllogictest ../test/sql/p3.10-simple-join.slt --verbose
+
+# p3.11-multi-way-join
+./bin/bustub-sqllogictest ../test/sql/p3.11-multi-way-join.slt --verbose
+
+# p3.12-repeat-execute
+./bin/bustub-sqllogictest ../test/sql/p3.12-repeat-execute.slt --verbose
+
+# p3.13-nested-index-join
+./bin/bustub-sqllogictest ../test/sql/p3.13-nested-index-join.slt --verbose
+
+# p3.14-hash-join
+./bin/bustub-sqllogictest ../test/sql/p3.14-hash-join.slt --verbose
+
+
+
+# p3.16-sort-limit
+./bin/bustub-sqllogictest ../test/sql/p3.16-sort-limit.slt --verbose
+
+# p3.17-topn
+./bin/bustub-sqllogictest ../test/sql/p3.17-topn.slt --verbose
+
+# p3.18-integration-1
+./bin/bustub-sqllogictest ../test/sql/p3.18-integration-1.slt --verbose
+
+# p3.19-integration-2
+./bin/bustub-sqllogictest ../test/sql/p3.19-integration-2.slt --verbose
+
+# leaderboard q1/q2/q3
+./bin/bustub-sqllogictest ../test/sql/p3.leaderboard-q1.slt --verbose
+./bin/bustub-sqllogictest ../test/sql/p3.leaderboard-q2.slt --verbose
+./bin/bustub-sqllogictest ../test/sql/p3.leaderboard-q3.slt --verbose
+
+# subquery
+./bin/bustub-sqllogictest ../test/sql/subquery.slt --verbose
+
+# update.slt
+./bin/bustub-sqllogictest ../test/sql/update.slt --verbose
+*/
